@@ -29,6 +29,11 @@
     
 }
 
+-(void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event
+{
+    return;
+}
+
 -(instancetype)initWithFrame:(CGRect)frame
 {
     self = [super initWithFrame:frame];
