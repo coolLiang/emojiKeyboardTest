@@ -9,6 +9,8 @@
 #import "Tools.h"
 #import "FaceTextAttachment.h"
 
+#define SCREEN_WIDTH [UIScreen mainScreen].bounds.size.width
+#define SCREEN_HEIGHT [UIScreen mainScreen].bounds.size.height
 @implementation Tools
 
 +(NSMutableAttributedString *)getTheTextViewWithString:(NSString *)string;
@@ -20,14 +22,13 @@
     //获取plist中的数据
     NSArray * faceArray = [[NSArray alloc] initWithContentsOfFile:path];
     
-    
-    
-    NSDictionary * dict = @{NSFontAttributeName:[UIFont systemFontOfSize:22]};
+
+    NSDictionary * dict = @{NSFontAttributeName:[UIFont systemFontOfSize:16]};
     NSMutableAttributedString *attributeString = [[NSMutableAttributedString alloc]initWithString:string attributes:dict];
     
     //正则匹配要替换的文字的范围
     //正则表达式
-    NSString * pattern = @"\\[[a-zA-Z0-9\\u4e00-\\u9fa5]+\\]";
+    NSString * pattern = @"lyj+.{4}";
     NSError *error = nil;
     NSRegularExpression * re = [NSRegularExpression regularExpressionWithPattern:pattern options:NSRegularExpressionCaseInsensitive error:&error];
     
@@ -59,7 +60,7 @@
                 FaceTextAttachment * textAttachment = [[FaceTextAttachment alloc] init];
                 //给附件添加图片
                 textAttachment.image = [UIImage imageNamed:faceArray[i][@"Image"]];
-                textAttachment.emojiSize = 35;
+                textAttachment.emojiSize = 50;
                 
                 //把附件转换成可变字符串，用于替换掉源字符串中的表情文字
                 NSAttributedString *imageStr = [NSAttributedString attributedStringWithAttachment:textAttachment];
@@ -87,6 +88,124 @@
     }
     return attributeString;
     
+}
+
++(NSMutableAttributedString *)getTheGifViewWithString:(NSString *)string
+{
+ 
+    NSMutableAttributedString *text = [NSMutableAttributedString new];
+    UIFont *font = [UIFont systemFontOfSize:16];
+    
+    
+    string = [string stringByReplacingOccurrencesOfString:@"\U0000fffc" withString:@""];
+    
+    
+    //正则匹配要替换的文字的范围
+    //正则表达式
+    NSString * pattern = @"lyj+.{4}";
+    NSError *error = nil;
+    NSRegularExpression * re = [NSRegularExpression regularExpressionWithPattern:pattern options:NSRegularExpressionCaseInsensitive error:&error];
+    
+    if (!re) {
+        NSLog(@"%@", [error localizedDescription]);
+    }
+    
+    //通过正则表达式来匹配字符串
+    NSArray *resultArray = [re matchesInString:string options:0 range:NSMakeRange(0, string.length)];
+
+    
+    //内容中未含有表情元素.就直接展示文字
+    if (resultArray.count == 0) {
+        
+        [text appendAttributedString:[[NSAttributedString alloc]initWithString:string attributes:nil]];
+        
+    }
+    
+    //含有表情元素.进行进一步处理，
+    else
+    {
+        
+        //标识的范围。用以判断是否第一次进入。
+        NSRange indexRange = {0,0};
+        
+        
+        for (int i = 0; i < resultArray.count; i++) {
+            
+            NSTextCheckingResult * match = resultArray[i];
+            NSRange range = [match range];
+            
+            //说明在第一个表情前方有文字输入.增加显示
+            if (range.location != 0) {
+                
+                if (indexRange.length == 0 && indexRange.location == 0) {
+                    
+                    NSRange textRange = {0,range.location};
+                    NSString * firstText = [string substringWithRange:textRange];
+                    
+                    [text appendAttributedString:[[NSAttributedString alloc]initWithString:firstText attributes:nil]];
+                    
+                }
+                
+            }
+            //判断起一次的range 跟这一次的range之间是否存在字符。
+            if (range.location > indexRange.location + indexRange.length && indexRange.length != 0) {
+                
+                NSRange centerRange = {indexRange.location + indexRange.length,range.location - indexRange.location - indexRange.length};
+                
+                NSString * centerText = [string substringWithRange:centerRange];
+                
+                [text appendAttributedString:[[NSAttributedString alloc]initWithString:centerText attributes:nil]];
+                
+            }
+            
+            //获取原字符串中对应的值
+            NSString *subStr = [string substringWithRange:range];
+            
+            NSString * gifPath = [NSString stringWithFormat:@"%@.gif",subStr];
+            YYImage * image = [YYImage imageNamed:gifPath];
+            image.preloadAllAnimatedImageFrames = YES;
+            YYAnimatedImageView * imageView = [[YYAnimatedImageView alloc]initWithImage:image];
+            imageView.autoPlayAnimatedImage = NO;
+            [imageView startAnimating];
+            
+            NSMutableAttributedString * gifText = [NSMutableAttributedString yy_attachmentStringWithContent:imageView contentMode:UIViewContentModeCenter attachmentSize:imageView.frame.size alignToFont:font alignment:YYTextVerticalAlignmentCenter];
+            
+            [text appendAttributedString:gifText];
+            
+            //表情末尾有文字时.
+            if (i == resultArray.count - 1) {
+                
+                if (string.length > (range.location + range.length)) {
+                    
+                    CGFloat indexR = range.location + range.length;
+                    
+                    
+                    NSString * lastText = [string substringFromIndex:indexR];
+                    
+                    [text appendAttributedString:[[NSAttributedString alloc]initWithString:lastText attributes:nil]];
+                    
+                }
+            }
+            
+            indexRange = range;
+        }
+
+            
+    }
+    
+   
+    return text;
+}
+
++(CGFloat)getContentHeight:(NSString *)value
+{
+    UITextView *detailTextView = [[UITextView alloc]initWithFrame:CGRectMake(0, 0, SCREEN_WIDTH - 40, 0)];
+    
+    detailTextView.font = [UIFont systemFontOfSize:16];
+    
+    detailTextView.attributedText = [Tools getTheTextViewWithString:value];
+    
+    return detailTextView.contentSize.height - 11;
 }
 
 @end

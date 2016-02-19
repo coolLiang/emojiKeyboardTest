@@ -7,6 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
+#import <YYText/YYText.h>
 
 @interface WaterTableViewCell : UITableViewCell
 
@@ -14,14 +15,10 @@
 
 @property(nonatomic,strong)UITextView * contentTextView;
 
-@property(nonatomic,copy)NSString * string;
+@property(nonatomic,copy)NSMutableAttributedString * string;
 
 @property(nonatomic,assign)CGSize size;
 
-@property(nonatomic,strong)UILabel * testLabel;
-
-
-
-
+@property(nonatomic,strong)YYLabel * label; 
 
 @end

@@ -10,6 +10,7 @@
 #import "Masonry.h"
 #import "Tools.h"
 
+
 @implementation WaterTableViewCell
 
 - (void)awakeFromNib {
@@ -27,7 +28,7 @@
     if (!cell) {
         
         cell = [[WaterTableViewCell alloc]initWithStyle:UITableViewCellStyleDefault reuseIdentifier:water];
-        cell.backgroundColor = [UIColor lightGrayColor];
+        cell.backgroundColor = [UIColor yellowColor];
         
     }
     return cell;
@@ -41,7 +42,7 @@
         [self buildUI];
         
         [self buildCS];
-        
+
         
     }
     
@@ -50,31 +51,29 @@
 
 -(void)buildUI
 {
-    self.contentTextView = [[UITextView alloc]init];
-    self.contentTextView.backgroundColor = [UIColor redColor];
-    self.contentTextView.editable = NO;
-    [self.contentView addSubview:self.contentTextView];
-
- 
+    self.label = [YYLabel new];
+    self.label.numberOfLines = 0;
+    [self.contentView addSubview:self.label];
     
 }
 
 -(void)buildCS
 {
-    [self.contentTextView mas_makeConstraints:^(MASConstraintMaker *make) {
-      
-        make.left.equalTo(self.contentView.mas_left).offset(50);
-        make.right.equalTo(self.contentView.mas_right).offset(-50);
-        make.top.equalTo(self.contentView.mas_top).offset(5);
-        make.bottom.equalTo(self.contentView.mas_bottom).offset(-5);
+    [self.label mas_makeConstraints:^(MASConstraintMaker *make) {
+       
+        make.left.equalTo(self.contentView.mas_left).offset(20);
+        make.right.equalTo(self.contentView.mas_right).offset(-20);
+        make.top.equalTo(self.contentView.mas_top).offset(2);
+        make.bottom.equalTo(self.contentView.mas_bottom).offset(-2);
+
+        
     }];
-    
+
 }
 
--(void)setString:(NSString *)string
+-(void)setString:(NSMutableAttributedString *)string
 {
-    self.contentTextView.attributedText = [Tools getTheTextViewWithString:string];
-    
+    self.label.attributedText = string;
 }
 
 

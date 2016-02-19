@@ -16,4 +16,5 @@
 //新增：保存当前表情图片的大小
 @property(assign, nonatomic) CGFloat emojiSize;
 
+
 @end

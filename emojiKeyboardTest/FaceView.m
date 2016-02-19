@@ -64,16 +64,14 @@
 
 -(void)buildUI
 {
-    NSLog(@"%f",WIDTH);
-    
-    NSLog(@"%f",HEIGHT);
-    
-    CGFloat buttonWidth = (WIDTH - 80)/7;
-    CGFloat buttonHeight = (WIDTH - 80)/7;
+
+    CGFloat buttonWidth = (WIDTH - 100)/4;
+    CGFloat buttonHeight = (WIDTH - 100)/4;
+    CGFloat margin = 20;
     
     int row = 0;
     
-    for (int i = 0; i<self.faceImageArray.count + 1 ; i++) {
+    for (int i = 0; i<self.faceImageArray.count  ; i++) {
         
         
         
@@ -82,24 +80,24 @@
         
         if (i == self.faceDateArray.count) {
             
-            button.tag = 1000+110;
-            [button setBackgroundImage:[UIImage imageNamed:@"delete"] forState:UIControlStateNormal];
+//            button.tag = 1000+110;
+//            [button setBackgroundImage:[UIImage imageNamed:@"delete"] forState:UIControlStateNormal];
         }
+        
         else
         {
             button.tag = 1000 + i;
             [button setBackgroundImage:[UIImage imageNamed:[NSString stringWithFormat:@"%@",self.faceImageArray[i]]] forState:UIControlStateNormal];
         }
+
         
-        
-        
-        if (i % 7 ==0 && i != 0) {
+        if (i % 4 ==0 && i != 0) {
             row ++;
             
         }
         
-        CGFloat Xmargin = (10+buttonWidth)*(i%7) + 10;
-        CGFloat Ymargin = (10+buttonHeight)*row + 10;
+        CGFloat Xmargin = (margin + buttonWidth)*(i%4) + margin;
+        CGFloat Ymargin = (margin +  buttonHeight)*row + margin;
         button.frame = CGRectMake(Xmargin, Ymargin, buttonWidth, buttonHeight);
         [button addTarget:self action:@selector(buttonOnClickWithIndex:) forControlEvents:UIControlEventTouchDown];
         

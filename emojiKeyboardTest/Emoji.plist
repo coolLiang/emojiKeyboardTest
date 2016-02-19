@@ -3,112 +3,100 @@
 <plist version="1.0">
 <array>
 	<dict>
+		<key>Gif</key>
+		<string>lyj0000.gif</string>
 		<key>String</key>
-		<string>[1]</string>
+		<string>lyj0000</string>
 		<key>Image</key>
-		<string>1</string>
+		<string>lyj0000.png</string>
 	</dict>
 	<dict>
+		<key>Gif</key>
+		<string>lyj0001.gif</string>
 		<key>String</key>
-		<string>[2]</string>
+		<string>lyj0001</string>
 		<key>Image</key>
-		<string>2</string>
+		<string>lyj0001.png</string>
 	</dict>
 	<dict>
+		<key>Gif</key>
+		<string>lyj0002.gif</string>
 		<key>String</key>
-		<string>[3]</string>
+		<string>lyj0002</string>
 		<key>Image</key>
-		<string>3</string>
+		<string>lyj0002.png</string>
 	</dict>
 	<dict>
+		<key>Gif</key>
+		<string>lyj0003.gif</string>
 		<key>String</key>
-		<string>[4]</string>
+		<string>lyj0003</string>
 		<key>Image</key>
-		<string>4</string>
+		<string>lyj0003.png</string>
 	</dict>
 	<dict>
+		<key>Gif</key>
+		<string>lyj0004.gif</string>
 		<key>String</key>
-		<string>[5]</string>
+		<string>lyj0004</string>
 		<key>Image</key>
-		<string>5</string>
+		<string>lyj0004.png</string>
 	</dict>
 	<dict>
+		<key>Gif</key>
+		<string>lyj0005.gif</string>
 		<key>String</key>
-		<string>[6]</string>
+		<string>lyj0005</string>
 		<key>Image</key>
-		<string>6</string>
+		<string>lyj0005.png</string>
 	</dict>
 	<dict>
+		<key>Gif</key>
+		<string>lyj0006.gif</string>
 		<key>String</key>
-		<string>[7]</string>
+		<string>lyj0006</string>
 		<key>Image</key>
-		<string>7</string>
+		<string>lyj0006.png</string>
 	</dict>
 	<dict>
+		<key>Gif</key>
+		<string>lyj0007.gif</string>
 		<key>String</key>
-		<string>[8]</string>
+		<string>lyj0007</string>
 		<key>Image</key>
-		<string>8</string>
+		<string>lyj0007.png</string>
 	</dict>
 	<dict>
+		<key>Gif</key>
+		<string>lyj0008.gif</string>
 		<key>String</key>
-		<string>[9]</string>
+		<string>lyj0008</string>
 		<key>Image</key>
-		<string>9</string>
+		<string>lyj0008.png</string>
 	</dict>
 	<dict>
+		<key>Gif</key>
+		<string>lyj0009.gif</string>
 		<key>String</key>
-		<string>[10]</string>
+		<string>lyj0009</string>
 		<key>Image</key>
-		<string>10</string>
+		<string>lyj0009.png</string>
 	</dict>
 	<dict>
+		<key>Gif</key>
+		<string>lyj0010.gif</string>
 		<key>String</key>
-		<string>[11]</string>
+		<string>lyj0010</string>
 		<key>Image</key>
-		<string>11</string>
+		<string>lyj0010.png</string>
 	</dict>
 	<dict>
+		<key>Gif</key>
+		<string>lyj0011.gif</string>
 		<key>String</key>
-		<string>[12]</string>
+		<string>lyj0011</string>
 		<key>Image</key>
-		<string>12</string>
-	</dict>
-	<dict>
-		<key>String</key>
-		<string>[13]</string>
-		<key>Image</key>
-		<string>13</string>
-	</dict>
-	<dict>
-		<key>String</key>
-		<string>[14]</string>
-		<key>Image</key>
-		<string>14</string>
-	</dict>
-	<dict>
-		<key>String</key>
-		<string>[15]</string>
-		<key>Image</key>
-		<string>15</string>
-	</dict>
-	<dict>
-		<key>String</key>
-		<string>[16]</string>
-		<key>Image</key>
-		<string>16</string>
-	</dict>
-	<dict>
-		<key>String</key>
-		<string>[17]</string>
-		<key>Image</key>
-		<string>17</string>
-	</dict>
-	<dict>
-		<key>String</key>
-		<string>[18]</string>
-		<key>Image</key>
-		<string>18</string>
+		<string>lyj0011.png</string>
 	</dict>
 </array>
 </plist>

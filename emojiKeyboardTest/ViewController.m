@@ -17,7 +17,7 @@
 
 #define SCREEN_WIDTH [UIScreen mainScreen].bounds.size.width
 #define SCREEN_HEIGHT [UIScreen mainScreen].bounds.size.height
-@interface ViewController ()<FaceViewDelegate,InputViewDelegate,UITextViewDelegate,UITableViewDataSource,UITableViewDelegate>
+@interface ViewController ()<FaceViewDelegate,InputViewDelegate,UITextViewDelegate,UITableViewDataSource,UITableViewDelegate,UIActionSheetDelegate>
 
 @property(nonatomic,strong)InputView * inputView;
 
@@ -39,6 +39,12 @@
 
 @property(nonatomic,strong)NSMutableArray * cellDataArray; //
 
+@property(nonatomic,strong)UIView * animationView;//input and face.
+
+@property(nonatomic,assign)BOOL isKeyBoardShow;  //标识. 键盘是否展示出来
+
+@property(nonatomic,assign)BOOL isFaceViewShow;  //标识. 表情键盘是否展示出来
+
 
 
 @end
@@ -47,26 +53,20 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    
     self.inputSrting = @"";
     
     self.cellDataArray = [[NSMutableArray alloc]init];
-
-    
-    [self buildData];
-    
+    self.SelectedFaceArray = [[NSMutableArray alloc]init];
+ 
     self.faceView = [FaceView setupFaceView];
-    self.faceView.backgroundColor = [UIColor redColor];
     self.faceView.delegate = self;
-    [self.view addSubview:self.faceView];
+    self.faceView.backgroundColor = [UIColor clearColor];
 
-   
     self.inputView = [InputView setupFaceView];
-    self.inputView.backgroundColor = [UIColor greenColor];
+    self.inputView.backgroundColor = [UIColor lightTextColor];
     self.inputView.delegate = self;
-    
-    [self.view addSubview:self.inputView];
-    
-
     
     
     [[NSNotificationCenter defaultCenter] addObserver:self
@@ -74,13 +74,23 @@
                                                  name:UIKeyboardWillShowNotification
                                                object:nil];
     
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(keyboardWillHidden)
+                                                 name:UIKeyboardWillHideNotification
+                                               object:nil];
+
     self.recordTableView = [[RecordTableview alloc]init];
     
     UIView * view = [[UIView alloc]init];
+    
+    self.recordTableView.backgroundColor = [UIColor lightGrayColor];
+    
     self.recordTableView.tableFooterView = view;
     self.recordTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+    
     self.recordTableView.delegate = self;
     self.recordTableView.dataSource = self;
+    
     self.recordTableView.estimatedRowHeight  = 66;
     self.recordTableView.rowHeight = UITableViewAutomaticDimension;
 
@@ -88,57 +98,91 @@
     
     [self.view addSubview:self.recordTableView];
     
+    self.animationView = [[UIView alloc]init];
+    self.animationView.backgroundColor = [UIColor lightGrayColor];
+    [self.animationView addSubview:self.faceView];
+    [self.animationView addSubview:self.inputView];
+    
+    
+    [self.view addSubview:self.animationView];
+    
     
     [self buildCS];
     
     
     [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(hideKeyBoard) name:@"onClickTheTableViewToHideKeyBoard" object:nil];
+
     
 }
 
+-(void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    
+}
+
+//点击列表视图.回收键盘以及表情视图
 -(void)hideKeyBoard
 {
     [self.view endEditing:YES];
-    
-    if (self.inputView.inputTextView.text.length <= 0) {
-        
-        return;
-    }
-    
+    self.isKeyBoardShow = NO;
     [self restoreFaceView];
 }
 
+//键盘展示时。
 -(void)keyboardWillShow
 {
-    [self restoreFaceView];
+    
+    self.isKeyBoardShow = YES;
+    
+    [UIView animateWithDuration:0 animations:^{
+        
+        
+        [self.animationView mas_updateConstraints:^(MASConstraintMaker *make) {
+            
+            make.top.equalTo(self.view.mas_bottom).offset(-self.inputView.frame.size.height);
+            
+        }];
+
+        [self.animationView layoutIfNeeded];
+        self.isFaceViewShow = NO;
+      
+        
+    }];
 }
 
+//键盘展示时.
+-(void)keyboardWillHidden
+{
+    self.isKeyBoardShow = NO;
+}
+
+//回收表情视图.
 -(void)restoreFaceView
 {
-    NSLog(@"%@",NSStringFromCGRect(self.inputView.frame));
-    NSLog(@"%@",NSStringFromCGRect(self.faceView.frame));
-    
-//    SCREEN_HEIGHT-self.inputView.frame.size.height
-    [UIView animateWithDuration:3 animations:^{
-        self.inputView.frame = CGRectMake(0, SCREEN_HEIGHT-self.inputView.frame.size.height, self.inputView.frame.size.width, self.inputView.frame.size.height);
+
+    [UIView animateWithDuration:.5 animations:^{
+
+        [self.animationView mas_updateConstraints:^(MASConstraintMaker *make) {
+           
+            make.top.equalTo(self.view.mas_bottom).offset(-self.inputView.frame.size.height);
+            
+        }];
         
-        self.faceView.frame = CGRectMake(0, SCREEN_HEIGHT, self.faceView.frame.size.width, self.faceView.frame.size.height);
-        
-        NSLog(@"%@",NSStringFromCGRect(self.inputView.frame));
-        NSLog(@"%@",NSStringFromCGRect(self.faceView.frame));
+        [self.animationView layoutIfNeeded];
+        self.isFaceViewShow = NO;
         
         
+
     } completion:^(BOOL finished) {
         
         if (finished) {
             
             [self.inputView mas_updateConstraints:^(MASConstraintMaker *make) {
                 
-                make.bottom.mas_equalTo(0);
+                make.top.mas_equalTo(0);
                 
             }];
-            [self updateInputViewFrame];
-
         }
 
     }];
@@ -146,48 +190,42 @@
 }
 
 
-
+//根据输入框中的内容 返回所相适应的高度
 - (CGSize)contentSizeOfTextView:(UITextView *)textView
 {
     CGSize textViewSize = [textView sizeThatFits:CGSizeMake(textView.frame.size.width-1, FLT_MAX)];
-    
-    
     return textViewSize;
 }
 
 
--(void)buildData
-{
-    //加载plist文件中的数据
-    NSBundle *bundle = [NSBundle mainBundle];
-    //寻找资源的路径
-    NSString *path = [bundle pathForResource:@"Emoji" ofType:@"plist"];
-    //获取plist中的数据
-    self.faceDataArray = [[NSArray alloc] initWithContentsOfFile:path];
-    
-    
-    self.SelectedFaceArray = [[NSMutableArray alloc]init];
-    
-}
 
 -(void)buildCS
 {
+    [self.animationView mas_makeConstraints:^(MASConstraintMaker *make) {
+       
+        make.left.and.right.mas_equalTo(0);
+        make.height.mas_equalTo(50 + SCREEN_WIDTH * 0.75);
+        make.top.equalTo(self.view.mas_bottom).offset(-50);
+        
+    }];
+    
+    
     [self.inputView mas_makeConstraints:^(MASConstraintMaker *make) {
         
         make.left.and.right.mas_equalTo(0);
-        make.bottom.mas_equalTo(0);
+        make.top.mas_equalTo(0);
         make.height.mas_equalTo(50);
   
     }];
     
     [self.faceView mas_makeConstraints:^(MASConstraintMaker *make) {
        
-        make.top.equalTo(self.inputView.mas_bottom).offset(0);
         make.left.and.right.mas_equalTo(0);
-        make.height.mas_equalTo(SCREEN_HEIGHT/4);
+        make.bottom.equalTo(self.animationView.mas_bottom).offset(0);
+        make.height.mas_equalTo(SCREEN_WIDTH * 0.75);
         
     }];
-    
+
     [self.recordTableView mas_makeConstraints:^(MASConstraintMaker *make) {
        
         make.width.mas_equalTo(SCREEN_WIDTH);
@@ -199,6 +237,7 @@
     
 }
 
+//将输入框最新的数据拼接成字符串返回。
 -(NSString *)updateInputString;
 {
     NSString * string = @"";
@@ -222,7 +261,6 @@
     self.inputView.inputTextView.attributedText = [Tools getTheTextViewWithString:self.inputSrting];
     [self updateInputViewFrame];
     
-    
 }
 
 -(void)onClickFaceViewWithDelete
@@ -239,28 +277,46 @@
 {
     [self.view endEditing:YES];
     
-    [UIView animateWithDuration:.5 animations:^{
-       
-        [self.inputView mas_updateConstraints:^(MASConstraintMaker *make) {
-           
-            make.bottom.equalTo(self.view.mas_bottom).offset(-SCREEN_HEIGHT/4);
+    if (self.isFaceViewShow) {
+        
+        [self restoreFaceView];
+        
+    }
+    else
+    {
+        [UIView animateWithDuration:.5 animations:^{
+            
+            
+            [self.animationView mas_updateConstraints:^(MASConstraintMaker *make) {
+                
+                make.top.equalTo(self.view.mas_bottom).offset(-self.animationView.frame.size.height);
+                
+            }];
+            
+            [self.animationView layoutIfNeeded];
+            self.isFaceViewShow = YES;
+            
             
         }];
-        
-        [self.inputView layoutIfNeeded];
-        [self.faceView layoutIfNeeded];
-        
-        
-    }];
+    }
+    
+    
 }
 
 -(void)onInputWithString:(NSString *)string
 {
     
     [self.SelectedFaceArray addObject:string];
-    self.inputView.inputTextView.font = [UIFont systemFontOfSize:22];
+    self.inputView.inputTextView.font = [UIFont systemFontOfSize:19];
     [self updateInputViewFrame];
 
+}
+
+-(void)onUpdateText:(NSString *)string
+{
+    [self.SelectedFaceArray removeLastObject];
+    [self.SelectedFaceArray addObject:string];
+    [self updateInputViewFrame];
 }
 
 -(void)onClickTheKeyBoardDeleteButton
@@ -272,31 +328,52 @@
 
 -(void)onClickThePhotoButton
 {
-    NSLog(@"231");
+    UIActionSheet *sheet = [[UIActionSheet alloc]initWithTitle:nil delegate:self cancelButtonTitle:@"取消" destructiveButtonTitle:nil otherButtonTitles:@"相册",@"拍照", nil];
+    [sheet showInView:self.view];
     
 }
 
+//用以更新输入框的高度.
 -(void)updateInputViewFrame
 {
     
-    
     self.inputViewSize = [self contentSizeOfTextView:self.inputView.inputTextView];
     
-    self.inputView.inputTextView.frame = CGRectMake(self.inputView.inputTextView.frame.origin.x, self.inputView.inputTextView.frame.origin.y, self.inputView.inputTextView.frame.size.width, self.inputViewSize.height);
+     CGFloat heightR = self.inputViewSize.height - self.inputView.inputTextView.frame.size.height;
     
+    self.inputView.inputTextView.frame = CGRectMake(self.inputView.inputTextView.frame.origin.x, self.inputView.inputTextView.frame.origin.y, self.inputView.inputTextView.frame.size.width, self.inputViewSize.height);
+
     
     [UIView animateWithDuration:0 animations:^{
+        
+        if (heightR > 0) {
+            
+            if (self.isKeyBoardShow) {
+                
+                [self.animationView mas_updateConstraints:^(MASConstraintMaker *make) {
+                    
+                    make.height.mas_equalTo(self.animationView.frame.size.height + heightR);
+                    make.top.equalTo(self.view.mas_bottom).offset(-(self.inputView.frame.size.height + heightR));
+                    
+                }];
+            }
+            else
+            {
+                [self.animationView mas_updateConstraints:^(MASConstraintMaker *make) {
+                    
+                    make.height.mas_equalTo(self.animationView.frame.size.height + heightR);
+                    make.top.equalTo(self.view.mas_bottom).offset(-(self.animationView.frame.size.height + heightR));
+                    
+                }];
+            }
+        }
         
         [self.inputView mas_updateConstraints:^(MASConstraintMaker *make) {
             
             make.height.mas_equalTo(self.inputViewSize.height + 10);
             
         }];
-        
-        [self.inputView layoutIfNeeded];
-        [self.faceView layoutIfNeeded];
-        
-        
+
     }];
 }
 
@@ -304,18 +381,47 @@
 {
     self.inputSrting = [self updateInputString];
     
+    if (self.inputSrting.length == 0) {
+        
+        return;
+    }
     
     [self.SelectedFaceArray removeAllObjects];
     self.inputView.inputTextView.text = @"";
+    self.inputView.lastTextViewStr = @"";
     
     [self.cellDataArray addObject:self.inputSrting];
     
-    [self restoreFaceView];
+    [self sendedUpdateUI];
     
     [self.view endEditing:YES];
     [self.recordTableView reloadData];
+    self.inputView.inputTextView.font = [UIFont systemFontOfSize:19];
     
 }
+
+-(void)sendedUpdateUI
+{
+    [UIView animateWithDuration:.5 animations:^{
+        
+        [self.animationView mas_updateConstraints:^(MASConstraintMaker *make) {
+            
+            make.top.equalTo(self.view.mas_bottom).offset(-50);
+            make.height.mas_equalTo(50 + SCREEN_WIDTH * 0.75);
+            
+        }];
+        
+        [self.inputView mas_updateConstraints:^(MASConstraintMaker *make) {
+           
+            make.height.mas_equalTo(50);
+        }];
+
+        [self.animationView layoutIfNeeded];
+
+    }];
+}
+
+
 
 #pragma mark - tableview delegate;
 
@@ -334,31 +440,24 @@
 {
     WaterTableViewCell * cell = [WaterTableViewCell WaterTableViewCellWithTableView:tableView];
     
-   cell.string = self.cellDataArray[indexPath.row];
+    cell.string = [Tools getTheGifViewWithString:self.cellDataArray[indexPath.row]];
     
     return cell;
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    return [self heightForString:self.cellDataArray[indexPath.row] fontSize:22 andWidth:SCREEN_WIDTH-100];
+    return  [Tools getContentHeight:self.cellDataArray[indexPath.row]];
+    
 }
 
-- (float) heightForString:(NSString *)value fontSize:(float)fontSize andWidth:(float)width
-{
-    UITextView *detailTextView = [[UITextView alloc]initWithFrame:CGRectMake(0, 0, width, 0)];
-    
-    detailTextView.font = [UIFont systemFontOfSize:fontSize];
-    
-    detailTextView.attributedText = [Tools getTheTextViewWithString:value];
-    CGSize deSize = [detailTextView sizeThatFits:CGSizeMake(width,FLT_MAX)];
-    return deSize.height+10;
-}
 
--(void)viewDidAppear:(BOOL)animated
-{
-    [super viewDidAppear:animated];
+#pragma mark - actionSheetDelegate
 
+-(void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+
+    
 }
 
 - (void)didReceiveMemoryWarning {
