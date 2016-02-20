@@ -53,6 +53,8 @@
 {
     self.label = [YYLabel new];
     self.label.numberOfLines = 0;
+    self.label.font = [UIFont systemFontOfSize:16];
+    
     [self.contentView addSubview:self.label];
     
 }
@@ -61,8 +63,8 @@
 {
     [self.label mas_makeConstraints:^(MASConstraintMaker *make) {
        
-        make.left.equalTo(self.contentView.mas_left).offset(20);
-        make.right.equalTo(self.contentView.mas_right).offset(-20);
+        make.left.equalTo(self.contentView.mas_left).offset(15);
+        make.right.equalTo(self.contentView.mas_right).offset(-15);
         make.top.equalTo(self.contentView.mas_top).offset(2);
         make.bottom.equalTo(self.contentView.mas_bottom).offset(-2);
 

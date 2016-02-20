@@ -23,5 +23,10 @@
 //根据上面2个方面中获得到的字符串。返回cell中相关内容所需要的行高。
 +(CGFloat)getContentHeight:(NSString *)value;
 
+//判断内容字符串中是否存在表情.
+//存在表情时与不存在表情时返回高度时的逻辑运算不一致。
++(BOOL)stringIsHaveImage:(NSString *)string;
+
+
 
 @end

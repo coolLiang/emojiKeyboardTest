@@ -55,6 +55,8 @@
     [super viewDidLoad];
     
     
+    self.view.backgroundColor = [UIColor yellowColor];
+    
     self.inputSrting = @"";
     
     self.cellDataArray = [[NSMutableArray alloc]init];
@@ -89,13 +91,8 @@
     self.recordTableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     
     self.recordTableView.delegate = self;
-    self.recordTableView.dataSource = self;
-    
-    self.recordTableView.estimatedRowHeight  = 66;
-    self.recordTableView.rowHeight = UITableViewAutomaticDimension;
+    self.recordTableView.dataSource = self; 
 
-    
-    
     [self.view addSubview:self.recordTableView];
     
     self.animationView = [[UIView alloc]init];
@@ -114,6 +111,7 @@
 
     
 }
+
 
 -(void)viewDidAppear:(BOOL)animated
 {
@@ -151,7 +149,7 @@
     }];
 }
 
-//键盘展示时.
+//键盘隐藏时.
 -(void)keyboardWillHidden
 {
     self.isKeyBoardShow = NO;
@@ -230,8 +228,8 @@
        
         make.width.mas_equalTo(SCREEN_WIDTH);
         make.left.equalTo(self.view.mas_left).offset(0);
-        make.top.equalTo(self.view.mas_top).offset(10);
-        make.bottom.equalTo(self.inputView.mas_top).offset(0);
+        make.top.equalTo(self.view.mas_top).offset(0);
+        make.bottom.equalTo(self.view.mas_bottom).offset(-50);
         
     }];
     
@@ -299,8 +297,7 @@
             
         }];
     }
-    
-    
+
 }
 
 -(void)onInputWithString:(NSString *)string
@@ -396,6 +393,11 @@
     
     [self.view endEditing:YES];
     [self.recordTableView reloadData];
+    
+    NSIndexPath * index = [NSIndexPath indexPathForRow:self.cellDataArray.count - 1 inSection:0];
+    [self.recordTableView scrollToRowAtIndexPath:index atScrollPosition:UITableViewScrollPositionBottom animated:YES];
+    
+    
     self.inputView.inputTextView.font = [UIFont systemFontOfSize:19];
     
 }
@@ -448,7 +450,6 @@
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
     return  [Tools getContentHeight:self.cellDataArray[indexPath.row]];
-    
 }
 
 

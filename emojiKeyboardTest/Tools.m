@@ -11,6 +11,8 @@
 
 #define SCREEN_WIDTH [UIScreen mainScreen].bounds.size.width
 #define SCREEN_HEIGHT [UIScreen mainScreen].bounds.size.height
+#define TEXT_FONT 16
+
 @implementation Tools
 
 +(NSMutableAttributedString *)getTheTextViewWithString:(NSString *)string;
@@ -22,8 +24,7 @@
     //获取plist中的数据
     NSArray * faceArray = [[NSArray alloc] initWithContentsOfFile:path];
     
-
-    NSDictionary * dict = @{NSFontAttributeName:[UIFont systemFontOfSize:16]};
+    NSDictionary * dict = @{NSFontAttributeName:[UIFont systemFontOfSize:TEXT_FONT]};
     NSMutableAttributedString *attributeString = [[NSMutableAttributedString alloc]initWithString:string attributes:dict];
     
     //正则匹配要替换的文字的范围
@@ -94,9 +95,9 @@
 {
  
     NSMutableAttributedString *text = [NSMutableAttributedString new];
-    UIFont *font = [UIFont systemFontOfSize:16];
-    
-    
+    NSDictionary *attribute = @{NSFontAttributeName:[UIFont systemFontOfSize:TEXT_FONT]};
+    UIFont *font = [UIFont systemFontOfSize:TEXT_FONT];
+
     string = [string stringByReplacingOccurrencesOfString:@"\U0000fffc" withString:@""];
     
     
@@ -117,7 +118,7 @@
     //内容中未含有表情元素.就直接展示文字
     if (resultArray.count == 0) {
         
-        [text appendAttributedString:[[NSAttributedString alloc]initWithString:string attributes:nil]];
+        [text appendAttributedString:[[NSAttributedString alloc]initWithString:string attributes:attribute]];
         
     }
     
@@ -142,7 +143,7 @@
                     NSRange textRange = {0,range.location};
                     NSString * firstText = [string substringWithRange:textRange];
                     
-                    [text appendAttributedString:[[NSAttributedString alloc]initWithString:firstText attributes:nil]];
+                    [text appendAttributedString:[[NSAttributedString alloc]initWithString:firstText attributes:attribute]];
                     
                 }
                 
@@ -154,7 +155,7 @@
                 
                 NSString * centerText = [string substringWithRange:centerRange];
                 
-                [text appendAttributedString:[[NSAttributedString alloc]initWithString:centerText attributes:nil]];
+                [text appendAttributedString:[[NSAttributedString alloc]initWithString:centerText attributes:attribute]];
                 
             }
             
@@ -182,7 +183,7 @@
                     
                     NSString * lastText = [string substringFromIndex:indexR];
                     
-                    [text appendAttributedString:[[NSAttributedString alloc]initWithString:lastText attributes:nil]];
+                    [text appendAttributedString:[[NSAttributedString alloc]initWithString:lastText attributes:attribute]];
                     
                 }
             }
@@ -199,13 +200,63 @@
 
 +(CGFloat)getContentHeight:(NSString *)value
 {
-    UITextView *detailTextView = [[UITextView alloc]initWithFrame:CGRectMake(0, 0, SCREEN_WIDTH - 40, 0)];
-    
-    detailTextView.font = [UIFont systemFontOfSize:16];
-    
-    detailTextView.attributedText = [Tools getTheTextViewWithString:value];
-    
-    return detailTextView.contentSize.height - 11;
+    if ([Tools stringIsHaveImage:value]) {
+        
+        UITextView *detailTextView = [[UITextView alloc]initWithFrame:CGRectMake(0, 0, SCREEN_WIDTH - 40, 0)];
+        
+        detailTextView.font = [UIFont systemFontOfSize:TEXT_FONT];
+        
+        detailTextView.attributedText = [Tools getTheTextViewWithString:value];
+        
+        
+        return detailTextView.contentSize.height - 11;
+    }
+    else
+    {
+        NSDictionary *attribute = @{NSFontAttributeName:[UIFont systemFontOfSize:TEXT_FONT]};
+        
+        
+        CGSize retSize = [value boundingRectWithSize:CGSizeMake(SCREEN_WIDTH - 30, 0)
+                                                 options:
+                          NSStringDrawingTruncatesLastVisibleLine |
+                          NSStringDrawingUsesLineFragmentOrigin |
+                          NSStringDrawingUsesFontLeading
+                                              attributes:attribute
+                                                 context:nil].size;
+        
+        return ceil(retSize.height) + 6;
+        
+    }
+  
+    return 0;
+ 
 }
 
++(BOOL)stringIsHaveImage:(NSString *)string
+{
+    
+    NSString * pattern = @"lyj+.{4}";
+    NSError *error = nil;
+    NSRegularExpression * re = [NSRegularExpression regularExpressionWithPattern:pattern options:NSRegularExpressionCaseInsensitive error:&error];
+    
+    if (!re) {
+        NSLog(@"%@", [error localizedDescription]);
+    }
+    
+    //通过正则表达式来匹配字符串
+    NSArray *resultArray = [re matchesInString:string options:0 range:NSMakeRange(0, string.length)];
+    
+    
+    //内容中未含有表情元素.就直接展示文字
+    if (resultArray.count == 0) {
+        
+        return NO;
+        
+    }
+    else
+    {
+        return YES;
+    }
+    
+}
 @end
