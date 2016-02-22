@@ -113,15 +113,15 @@
     NSInteger tag = sender.tag;
     NSInteger index = tag - 1000;
     
-    if (index == 110) {
-        
-        if (self.delegate && [self.delegate respondsToSelector:@selector(onClickFaceViewWithDelete)]) {
-            
-            [self.delegate onClickFaceViewWithDelete];
-            return;
-        }
-        
-    }
+//    if (index == 110) {
+//        
+//        if (self.delegate && [self.delegate respondsToSelector:@selector(onClickFaceViewWithDelete)]) {
+//            
+//            [self.delegate onClickFaceViewWithDelete];
+//            return;
+//        }
+//        
+//    }
     
     
     if (self.delegate && [self.delegate respondsToSelector:@selector(onClickFaceViewWithString:)]) {

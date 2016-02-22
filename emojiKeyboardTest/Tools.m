@@ -11,7 +11,8 @@
 
 #define SCREEN_WIDTH [UIScreen mainScreen].bounds.size.width
 #define SCREEN_HEIGHT [UIScreen mainScreen].bounds.size.height
-#define TEXT_FONT 16
+//文字数据的字体大小.
+#define TEXT_FONT 19
 
 @implementation Tools
 
@@ -26,6 +27,8 @@
     
     NSDictionary * dict = @{NSFontAttributeName:[UIFont systemFontOfSize:TEXT_FONT]};
     NSMutableAttributedString *attributeString = [[NSMutableAttributedString alloc]initWithString:string attributes:dict];
+    
+//    string = [string stringByReplacingOccurrencesOfString:@"\U0000fffc" withString:@""];
     
     //正则匹配要替换的文字的范围
     //正则表达式
@@ -180,7 +183,6 @@
                     
                     CGFloat indexR = range.location + range.length;
                     
-                    
                     NSString * lastText = [string substringFromIndex:indexR];
                     
                     [text appendAttributedString:[[NSAttributedString alloc]initWithString:lastText attributes:attribute]];
@@ -191,9 +193,7 @@
             indexRange = range;
         }
 
-            
     }
-    
    
     return text;
 }
@@ -258,5 +258,106 @@
         return YES;
     }
     
+}
+
++ (NSString *)changeString:(NSString *)string withFaceArray:(NSMutableArray *)faceArray
+{
+    //先查看字符串中是否需要进行替换字符串操作。
+
+    if([string rangeOfString:@"\U0000fffc"].location !=NSNotFound)//_roaldSearchText
+    {
+        //需要替换。先获取到需要替换的字符串的位置.
+        
+        NSArray * textArray = [string componentsSeparatedByString:@"\U0000fffc"];
+        
+        for (int i = 0; i < textArray.count; i++) {
+            
+            if (i == textArray.count - 1) {
+                
+                break;
+            }
+            
+            if (i == faceArray.count) {
+                
+                break;
+            }
+            
+            NSString * face = faceArray[i];
+            NSRange range = [Tools getNeedChangeStringRange:string];
+            
+            if (range.location == 0 && range.length == 0) {
+                
+                return string;
+                
+            }
+            
+            string = [string stringByReplacingCharactersInRange:range withString:face];
+        
+        }
+        
+        return string;
+    }
+    
+    else
+    {
+        return string;
+    }
+    
+}
+
++ (NSRange)getNeedChangeStringRange:(NSString *)string
+{
+    NSArray * textArray = [string componentsSeparatedByString:@"\U0000fffc"];
+    
+    if (textArray.count == 0) {
+        
+        NSRange range = {0,0};
+        
+        return range;
+    }
+    
+    NSString * text = textArray[0];
+    NSRange range = {text.length,1};
+    return range;
+}
+
++ (BOOL)stringContainsEmoji:(NSString *)string
+{
+    __block BOOL returnValue = NO;
+    
+    [string enumerateSubstringsInRange:NSMakeRange(0, [string length])
+                               options:NSStringEnumerationByComposedCharacterSequences
+                            usingBlock:^(NSString *substring, NSRange substringRange, NSRange enclosingRange, BOOL *stop) {
+                                
+                                const unichar hs = [substring characterAtIndex:0];
+                                if (0xd800 <= hs && hs <= 0xdbff) {
+                                    if (substring.length > 1) {
+                                        const unichar ls = [substring characterAtIndex:1];
+                                        const int uc = ((hs - 0xd800) * 0x400) + (ls - 0xdc00) + 0x10000;
+                                        if (0x1d000 <= uc && uc <= 0x1f77f) {
+                                            returnValue = YES;
+                                        }
+                                    }
+                                } else if (substring.length > 1) {
+                                    const unichar ls = [substring characterAtIndex:1];
+                                    if (ls == 0x20e3) {
+                                        returnValue = YES;
+                                    }
+                                } else {
+                                    if (0x2100 <= hs && hs <= 0x27ff) {
+                                        returnValue = YES;
+                                    } else if (0x2B05 <= hs && hs <= 0x2b07) {
+                                        returnValue = YES;
+                                    } else if (0x2934 <= hs && hs <= 0x2935) {
+                                        returnValue = YES;
+                                    } else if (0x3297 <= hs && hs <= 0x3299) {
+                                        returnValue = YES;
+                                    } else if (hs == 0xa9 || hs == 0xae || hs == 0x303d || hs == 0x3030 || hs == 0x2b55 || hs == 0x2b1c || hs == 0x2b1b || hs == 0x2b50) {
+                                        returnValue = YES;
+                                    }
+                                }
+                            }];
+    
+    return returnValue;
 }
 @end

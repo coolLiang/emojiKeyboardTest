@@ -14,6 +14,7 @@
 #import "WaterTableViewCell.h"
 #import "Tools.h"
 #import "RecordTableview.h"
+#import "IQKeyboardManager.h"
 
 #define SCREEN_WIDTH [UIScreen mainScreen].bounds.size.width
 #define SCREEN_HEIGHT [UIScreen mainScreen].bounds.size.height
@@ -45,6 +46,9 @@
 
 @property(nonatomic,assign)BOOL isFaceViewShow;  //标识. 表情键盘是否展示出来
 
+@property(nonatomic,copy)NSString * currentString;  //当前textview展示出来的字符串
+
+@property(nonatomic,strong)NSMutableArray * faceArray; //选择的表情.
 
 
 @end
@@ -54,13 +58,12 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    
-    self.view.backgroundColor = [UIColor yellowColor];
-    
     self.inputSrting = @"";
     
     self.cellDataArray = [[NSMutableArray alloc]init];
     self.SelectedFaceArray = [[NSMutableArray alloc]init];
+    self.faceArray = [[NSMutableArray alloc]init];
+    
  
     self.faceView = [FaceView setupFaceView];
     self.faceView.delegate = self;
@@ -117,6 +120,11 @@
 {
     [super viewDidAppear:animated];
     
+    IQKeyboardManager *manager = [IQKeyboardManager sharedManager];
+    manager.enableAutoToolbar = NO;
+    
+    
+    
 }
 
 //点击列表视图.回收键盘以及表情视图
@@ -169,8 +177,6 @@
         
         [self.animationView layoutIfNeeded];
         self.isFaceViewShow = NO;
-        
-        
 
     } completion:^(BOOL finished) {
         
@@ -191,8 +197,14 @@
 //根据输入框中的内容 返回所相适应的高度
 - (CGSize)contentSizeOfTextView:(UITextView *)textView
 {
-    CGSize textViewSize = [textView sizeThatFits:CGSizeMake(textView.frame.size.width-1, FLT_MAX)];
-    return textViewSize;
+    UITextView *detailTextView = [[UITextView alloc]initWithFrame:CGRectMake(0, 0, textView.frame.size.width - 5, 0)];
+    
+    detailTextView.font = [UIFont systemFontOfSize:19];
+
+    detailTextView.attributedText = [Tools getTheTextViewWithString:[Tools changeString:self.inputView.inputTextView.text withFaceArray:self.faceArray]];
+    
+    return detailTextView.contentSize;
+
 }
 
 
@@ -252,24 +264,21 @@
 -(void)onClickFaceViewWithString:(NSString *)string
 {
     
-    [self.SelectedFaceArray addObject:string];
+    NSString * currentText = self.inputView.inputTextView.text;
 
-    self.inputSrting = [self updateInputString];
+    [self.faceArray addObject:string];
     
-    self.inputView.inputTextView.attributedText = [Tools getTheTextViewWithString:self.inputSrting];
+    currentText  = [currentText stringByAppendingString:string];
+    
+    currentText = [Tools changeString:currentText withFaceArray:self.faceArray];
+    
+    self.inputView.inputTextView.attributedText = [Tools getTheTextViewWithString:currentText];
+
     [self updateInputViewFrame];
     
 }
 
--(void)onClickFaceViewWithDelete
-{
-    [self.SelectedFaceArray removeLastObject];
-    self.inputSrting  = [self updateInputString];
-    
-    self.inputView.inputTextView.attributedText = [Tools getTheTextViewWithString:self.inputSrting];
-    [self updateInputViewFrame];
-    
-}
+
 
 -(void)onClickTheFaceButton
 {
@@ -300,25 +309,28 @@
 
 }
 
--(void)onInputWithString:(NSString *)string
-{
-    
-    [self.SelectedFaceArray addObject:string];
-    self.inputView.inputTextView.font = [UIFont systemFontOfSize:19];
-    [self updateInputViewFrame];
-
-}
-
--(void)onUpdateText:(NSString *)string
-{
-    [self.SelectedFaceArray removeLastObject];
-    [self.SelectedFaceArray addObject:string];
-    [self updateInputViewFrame];
-}
 
 -(void)onClickTheKeyBoardDeleteButton
 {
-    [self.SelectedFaceArray removeLastObject];
+    
+    NSString * str = self.inputView.inputTextView.text;
+    
+    if (str.length == 0) {
+        
+        [self updateInputViewFrame];
+        return;
+    }
+    
+    NSString * test = [str substringFromIndex:str.length-1];
+    
+    
+    
+    if ([test isEqualToString:@"\U0000fffc"]) {
+        
+        [self.faceArray removeLastObject];
+    }
+
+    
     [self updateInputViewFrame];
 
 }
@@ -330,20 +342,44 @@
     
 }
 
+-(void)onClickTheKeyBoard
+{
+    [self updateInputViewFrame];
+}
+
 //用以更新输入框的高度.
 -(void)updateInputViewFrame
 {
     
     self.inputViewSize = [self contentSizeOfTextView:self.inputView.inputTextView];
     
-     CGFloat heightR = self.inputViewSize.height - self.inputView.inputTextView.frame.size.height;
+    CGFloat heightR = self.inputViewSize.height - self.inputView.inputTextView.frame.size.height;
     
-    self.inputView.inputTextView.frame = CGRectMake(self.inputView.inputTextView.frame.origin.x, self.inputView.inputTextView.frame.origin.y, self.inputView.inputTextView.frame.size.width, self.inputViewSize.height);
+    if (self.inputViewSize.height > 40) {
+        
+        self.inputView.inputTextView.frame = CGRectMake(self.inputView.inputTextView.frame.origin.x, self.inputView.inputTextView.frame.origin.y, self.inputView.inputTextView.frame.size.width, self.inputViewSize.height);
+        
+    }
 
     
-    [UIView animateWithDuration:0 animations:^{
+    [UIView animateWithDuration:.1 animations:^{
         
-        if (heightR > 0) {
+        
+        [self.inputView mas_updateConstraints:^(MASConstraintMaker *make) {
+            
+            if (self.inputViewSize.height < 40) {
+                
+                make.height.mas_equalTo(50);
+            }
+            else
+            {
+                make.height.mas_equalTo(self.inputViewSize.height + 10);
+            }
+
+        }];
+        self.inputView.inputTextView.font = [UIFont systemFontOfSize:19];
+        
+        if (heightR >= 0) {
             
             if (self.isKeyBoardShow) {
                 
@@ -364,30 +400,43 @@
                 }];
             }
         }
-        
-        [self.inputView mas_updateConstraints:^(MASConstraintMaker *make) {
-            
-            make.height.mas_equalTo(self.inputViewSize.height + 10);
-            
-        }];
+        else
+        {
+            [self.animationView mas_updateConstraints:^(MASConstraintMaker *make) {
+               
+                make.height.mas_equalTo(50 + SCREEN_WIDTH * 0.75);
+                make.top.equalTo(self.view.mas_bottom).offset(-50);
+                
+            }];
+        }
 
     }];
 }
 
 -(void)onClickTheSendButton
 {
-    self.inputSrting = [self updateInputString];
-    
-    if (self.inputSrting.length == 0) {
+  
+    if ([Tools changeString:self.inputView.inputTextView.text withFaceArray:self.faceArray].length == 0) {
         
         return;
     }
     
+    if ([Tools stringContainsEmoji:[Tools changeString:self.inputView.inputTextView.text withFaceArray:self.faceArray]]) {
+        
+        return;
+    }
+    
+    
+    
     [self.SelectedFaceArray removeAllObjects];
+
+    [self.cellDataArray addObject:[Tools changeString:self.inputView.inputTextView.text withFaceArray:self.faceArray]];
+    
+    [self.faceArray removeAllObjects];
+    
     self.inputView.inputTextView.text = @"";
     self.inputView.lastTextViewStr = @"";
-    
-    [self.cellDataArray addObject:self.inputSrting];
+
     
     [self sendedUpdateUI];
     
@@ -451,6 +500,7 @@
 {
     return  [Tools getContentHeight:self.cellDataArray[indexPath.row]];
 }
+
 
 
 #pragma mark - actionSheetDelegate

@@ -27,6 +27,12 @@
 //存在表情时与不存在表情时返回高度时的逻辑运算不一致。
 +(BOOL)stringIsHaveImage:(NSString *)string;
 
+//判断是否存在emoji表情
++ (BOOL)stringContainsEmoji:(NSString *)string;
 
+//字符串中存在空格的部分 用表情数组进行替换。
++ (NSString *)changeString:(NSString *)string withFaceArray:(NSMutableArray *)faceArray;
+
++ (NSRange)getNeedChangeStringRange:(NSString *)string;
 
 @end

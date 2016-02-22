@@ -76,6 +76,7 @@
 -(void)setString:(NSMutableAttributedString *)string
 {
     self.label.attributedText = string;
+
 }
 
 

@@ -13,6 +13,7 @@
 //点击表情时将表情数据进行传递
 -(void)onClickFaceViewWithString:(NSString *)string;
 
+@optional
 //本计划用以进行表情删除
 -(void)onClickFaceViewWithDelete;
 

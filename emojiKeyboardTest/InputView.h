@@ -10,6 +10,9 @@
 
 @protocol InputViewDelegate <NSObject>
 
+//每次点击键盘时触发方法.
+-(void)onClickTheKeyBoard;
+
 //点击表情按钮时
 -(void)onClickTheFaceButton;
 
@@ -19,14 +22,9 @@
 //点击发送按钮时
 -(void)onClickTheSendButton;
 
-//每次输入文字进行数据传递并展示
--(void)onInputWithString:(NSString *)string;
-
 //点击键盘上的删除按钮
 -(void)onClickTheKeyBoardDeleteButton;
 
-//特殊情况下的数据更新
--(void)onUpdateText:(NSString *)string;
 
 @end
 
