@@ -56,10 +56,6 @@
     self.faceButton.backgroundColor = [UIColor yellowColor];
     [self.faceButton addTarget:self action:@selector(chooseFace) forControlEvents:UIControlEventTouchDown];
     [self addSubview:self.faceButton];
-    
-    self.currentTextView = [[UITextView alloc]init];
-    [self addSubview:self.currentTextView];
-    
 
     
 }
@@ -109,6 +105,20 @@
     }];
 }
 
+-(void)textViewDidChange:(UITextView *)textView
+{
+    
+    if (textView.markedTextRange == nil) {
+        
+        [self.delegate onClickTheKeyBoard];
+        // do something with the new input chinese
+    }
+    else
+    {
+        
+    }
+
+}
 
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text
 {
@@ -132,7 +142,7 @@
     }
     else
     {
-        [self.delegate onClickTheKeyBoard];
+       [self.delegate onClickTheKeyBoard];
         
     }
     

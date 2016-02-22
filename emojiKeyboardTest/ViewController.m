@@ -122,9 +122,6 @@
     
     IQKeyboardManager *manager = [IQKeyboardManager sharedManager];
     manager.enableAutoToolbar = NO;
-    
-    
-    
 }
 
 //点击列表视图.回收键盘以及表情视图
@@ -197,7 +194,7 @@
 //根据输入框中的内容 返回所相适应的高度
 - (CGSize)contentSizeOfTextView:(UITextView *)textView
 {
-    UITextView *detailTextView = [[UITextView alloc]initWithFrame:CGRectMake(0, 0, textView.frame.size.width - 5, 0)];
+    UITextView *detailTextView = [[UITextView alloc]initWithFrame:CGRectMake(0, 0, textView.frame.size.width - 1, 0)];
     
     detailTextView.font = [UIFont systemFontOfSize:19];
 
@@ -275,7 +272,6 @@
     self.inputView.inputTextView.attributedText = [Tools getTheTextViewWithString:currentText];
 
     [self updateInputViewFrame];
-    
 }
 
 
@@ -317,7 +313,7 @@
     
     if (str.length == 0) {
         
-        [self updateInputViewFrame];
+        [self sendedUpdateUI];
         return;
     }
     
@@ -331,7 +327,7 @@
     }
 
     
-    [self updateInputViewFrame];
+//    [self updateInputViewFrame];
 
 }
 
@@ -351,16 +347,22 @@
 -(void)updateInputViewFrame
 {
     
+    NSLog(@"update");
+    
     self.inputViewSize = [self contentSizeOfTextView:self.inputView.inputTextView];
     
     CGFloat heightR = self.inputViewSize.height - self.inputView.inputTextView.frame.size.height;
+    
+    if (heightR == 0) {
+        
+        return;
+    }
     
     if (self.inputViewSize.height > 40) {
         
         self.inputView.inputTextView.frame = CGRectMake(self.inputView.inputTextView.frame.origin.x, self.inputView.inputTextView.frame.origin.y, self.inputView.inputTextView.frame.size.width, self.inputViewSize.height);
         
     }
-
     
     [UIView animateWithDuration:.1 animations:^{
         
@@ -379,7 +381,7 @@
         }];
         self.inputView.inputTextView.font = [UIFont systemFontOfSize:19];
         
-        if (heightR >= 0) {
+        if (heightR > 0) {
             
             if (self.isKeyBoardShow) {
                 
@@ -392,22 +394,58 @@
             }
             else
             {
-                [self.animationView mas_updateConstraints:^(MASConstraintMaker *make) {
+                if (self.isFaceViewShow) {
                     
-                    make.height.mas_equalTo(self.animationView.frame.size.height + heightR);
-                    make.top.equalTo(self.view.mas_bottom).offset(-(self.animationView.frame.size.height + heightR));
+                    [self.animationView mas_updateConstraints:^(MASConstraintMaker *make) {
+                        
+                        make.height.mas_equalTo(self.animationView.frame.size.height + heightR);
+                        make.top.equalTo(self.view.mas_bottom).offset(-(self.animationView.frame.size.height + heightR));
+                        
+                    }];
+                }
+                else
+                {
                     
-                }];
+                    
+                    [self.animationView mas_updateConstraints:^(MASConstraintMaker *make) {
+                        
+                        make.height.mas_equalTo(self.animationView.frame.size.height + heightR);
+                        make.top.equalTo(self.view.mas_bottom).offset(-(self.inputView.frame.size.height + heightR));
+                        
+                    }];
+                }
+                
             }
+            
+            [self.inputView layoutIfNeeded];
         }
         else
         {
-            [self.animationView mas_updateConstraints:^(MASConstraintMaker *make) {
+            
+            [UIView animateWithDuration:.1 animations:^{
                
-                make.height.mas_equalTo(50 + SCREEN_WIDTH * 0.75);
-                make.top.equalTo(self.view.mas_bottom).offset(-50);
+                if ((self.animationView.frame.size.height + heightR )> 50 + SCREEN_WIDTH * 0.75) {
+                    
+                    [self.animationView mas_updateConstraints:^(MASConstraintMaker *make) {
+                        
+                        make.height.mas_equalTo(self.animationView.frame.size.height + heightR);
+                        make.top.equalTo(self.view.mas_bottom).offset(-(self.inputView.frame.size.height + heightR));
+                        
+                    }];
+                }
+                else
+                {
+                    [self.animationView mas_updateConstraints:^(MASConstraintMaker *make) {
+                        
+                        make.height.mas_equalTo(50 + SCREEN_WIDTH * 0.75);
+                        make.top.equalTo(self.view.mas_bottom).offset(-50);
+                        
+                    }];
+                }
+                [self.inputView layoutIfNeeded];
                 
             }];
+ 
         }
 
     }];
@@ -435,9 +473,6 @@
     [self.faceArray removeAllObjects];
     
     self.inputView.inputTextView.text = @"";
-    self.inputView.lastTextViewStr = @"";
-
-    
     [self sendedUpdateUI];
     
     [self.view endEditing:YES];

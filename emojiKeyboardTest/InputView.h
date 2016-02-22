@@ -40,10 +40,6 @@
 
 @property(nonatomic,strong)UIButton * photoButton;
 
-@property(nonatomic,copy)NSString * lastTextViewStr;//上一次的的字符串.
-
-@property(nonatomic,strong)UITextView * currentTextView; //当前展示出来的字符串。帮助记录数据
-
 @property(nonatomic,weak)id delegate;
 
 
