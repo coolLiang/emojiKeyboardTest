@@ -32,7 +32,11 @@
     
     //正则匹配要替换的文字的范围
     //正则表达式
-    NSString * pattern = @"lyj+.{4}";
+//    NSString * pattern = @"lyj+.{4}";
+    
+    NSString * pattern = @"\\[lyj+.{4}+\\]";
+    
+    
     NSError *error = nil;
     NSRegularExpression * re = [NSRegularExpression regularExpressionWithPattern:pattern options:NSRegularExpressionCaseInsensitive error:&error];
     
@@ -106,7 +110,9 @@
     
     //正则匹配要替换的文字的范围
     //正则表达式
-    NSString * pattern = @"lyj+.{4}";
+//    NSString * pattern = @"lyj+.{4}";
+    
+    NSString * pattern = @"\\[lyj+.{4}+\\]";
     NSError *error = nil;
     NSRegularExpression * re = [NSRegularExpression regularExpressionWithPattern:pattern options:NSRegularExpressionCaseInsensitive error:&error];
     
@@ -209,7 +215,7 @@
         detailTextView.attributedText = [Tools getTheTextViewWithString:value];
         
         
-        return detailTextView.contentSize.height - 11;
+        return detailTextView.contentSize.height;
     }
     else
     {
@@ -224,7 +230,7 @@
                                               attributes:attribute
                                                  context:nil].size;
         
-        return ceil(retSize.height) + 6;
+        return ceil(retSize.height) + 10;
         
     }
   

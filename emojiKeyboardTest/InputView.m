@@ -44,7 +44,7 @@
     self.inputTextView.layer.cornerRadius = 5;
     self.inputTextView.layer.borderWidth = 1;
     self.inputTextView.layer.borderColor = [UIColor lightGrayColor].CGColor;
-    
+    self.inputTextView.layoutManager.allowsNonContiguousLayout=NO;
     [self addSubview:self.inputTextView];
     
     self.photoButton = [UIButton buttonWithType:UIButtonTypeCustom];

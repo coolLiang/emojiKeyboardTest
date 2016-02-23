@@ -30,8 +30,6 @@
 
 @property(nonatomic,copy)NSString * inputSrting;
 
-@property(nonatomic,strong)NSMutableArray * SelectedFaceArray;
-
 @property(nonatomic,strong)NSArray * faceDataArray;
 
 @property(nonatomic,strong)UITextView * testTextView;
@@ -61,7 +59,6 @@
     self.inputSrting = @"";
     
     self.cellDataArray = [[NSMutableArray alloc]init];
-    self.SelectedFaceArray = [[NSMutableArray alloc]init];
     self.faceArray = [[NSMutableArray alloc]init];
     
  
@@ -244,28 +241,19 @@
     
 }
 
-//将输入框最新的数据拼接成字符串返回。
--(NSString *)updateInputString;
-{
-    NSString * string = @"";
-    
-    for (int i = 0; i<self.SelectedFaceArray.count; i++) {
-        
-        string = [string stringByAppendingString:self.SelectedFaceArray[i]];
-    }
-    
-    return string;
-    
-}
-
 -(void)onClickFaceViewWithString:(NSString *)string
 {
+    
+    NSRange currentRange =  self.inputView.inputTextView.selectedRange;
+    
+    
     
     NSString * currentText = self.inputView.inputTextView.text;
 
     [self.faceArray addObject:string];
     
-    currentText  = [currentText stringByAppendingString:string];
+    currentText = [currentText stringByReplacingCharactersInRange:currentRange withString:string];
+
     
     currentText = [Tools changeString:currentText withFaceArray:self.faceArray];
     
@@ -346,27 +334,43 @@
 //用以更新输入框的高度.
 -(void)updateInputViewFrame
 {
-    
-    NSLog(@"update");
-    
+
     self.inputViewSize = [self contentSizeOfTextView:self.inputView.inputTextView];
     
     CGFloat heightR = self.inputViewSize.height - self.inputView.inputTextView.frame.size.height;
+    
+    NSLog(@"高度差 = %f",heightR);
     
     if (heightR == 0) {
         
         return;
     }
     
+    //输入框的坐标更新.
     if (self.inputViewSize.height > 40) {
         
+        if (self.inputViewSize.height > 150) {
+            
+            CGFloat offset = self.inputView.inputTextView.contentSize.height - self.inputView.inputTextView.bounds.size.height;
+            if (offset > 0)
+            {
+                [self.inputView.inputTextView setContentOffset:CGPointMake(0, offset) animated:YES];
+
+            }
+
+            return;
+        }
+        
         self.inputView.inputTextView.frame = CGRectMake(self.inputView.inputTextView.frame.origin.x, self.inputView.inputTextView.frame.origin.y, self.inputView.inputTextView.frame.size.width, self.inputViewSize.height);
+
         
     }
+    
     
     [UIView animateWithDuration:.1 animations:^{
         
         
+        //输入框所在父视图的高度更新.
         [self.inputView mas_updateConstraints:^(MASConstraintMaker *make) {
             
             if (self.inputViewSize.height < 40) {
@@ -379,10 +383,12 @@
             }
 
         }];
+        
         self.inputView.inputTextView.font = [UIFont systemFontOfSize:19];
         
         if (heightR > 0) {
             
+            //整体视图坐标更新.
             if (self.isKeyBoardShow) {
                 
                 [self.animationView mas_updateConstraints:^(MASConstraintMaker *make) {
@@ -422,7 +428,7 @@
         else
         {
             
-            [UIView animateWithDuration:.1 animations:^{
+            [UIView animateWithDuration:.5 animations:^{
                
                 if ((self.animationView.frame.size.height + heightR )> 50 + SCREEN_WIDTH * 0.75) {
                     
@@ -453,39 +459,35 @@
 
 -(void)onClickTheSendButton
 {
-  
+    
+    //判断发送的数据是否长度为空
     if ([Tools changeString:self.inputView.inputTextView.text withFaceArray:self.faceArray].length == 0) {
         
         return;
     }
     
+    //判断发送的数据是否带有emoji表情
     if ([Tools stringContainsEmoji:[Tools changeString:self.inputView.inputTextView.text withFaceArray:self.faceArray]]) {
         
         return;
     }
-    
-    
-    
-    [self.SelectedFaceArray removeAllObjects];
 
+    
     [self.cellDataArray addObject:[Tools changeString:self.inputView.inputTextView.text withFaceArray:self.faceArray]];
     
-    [self.faceArray removeAllObjects];
-    
-    self.inputView.inputTextView.text = @"";
     [self sendedUpdateUI];
     
-    [self.view endEditing:YES];
+    
     [self.recordTableView reloadData];
     
     NSIndexPath * index = [NSIndexPath indexPathForRow:self.cellDataArray.count - 1 inSection:0];
     [self.recordTableView scrollToRowAtIndexPath:index atScrollPosition:UITableViewScrollPositionBottom animated:YES];
     
     
-    self.inputView.inputTextView.font = [UIFont systemFontOfSize:19];
     
 }
 
+//发送后将UI更新为初始状态.并且重置相关数据。
 -(void)sendedUpdateUI
 {
     [UIView animateWithDuration:.5 animations:^{
@@ -505,6 +507,11 @@
         [self.animationView layoutIfNeeded];
 
     }];
+    
+    [self.faceArray removeAllObjects];
+    self.inputView.inputTextView.text = @"";
+    self.inputView.inputTextView.font = [UIFont systemFontOfSize:19];
+    [self.view endEditing:YES];
 }
 
 
